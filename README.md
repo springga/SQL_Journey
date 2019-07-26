@@ -4,21 +4,24 @@
 
 1. 列出所有表及其数据行数
   
-        create table #temp(Recordcount int ,tableName varchar(30))
-      
-        declare @tablename varchar(30)
-        declare @sql varchar(100)
+        create table #temp(Recordcount int ,tableName varchar(100))
+        
+        declare @tableschema varchar(30)
+        declare @tablename varchar(100)
+        declare @sql varchar(300)
         declare tablecursor cursor for
-        	select name from sys.tables
+        	select table_schema, table_name 
+        from [information_schema].[tables]
+        where table_type='BASE TABLE'
         
         open tablecursor
-        fetch next from tablecursor into @tablename
+        fetch next from tablecursor into @tableschema, @tablename
         while @@fetch_status=0
         
         begin
-        set @sql='insert into #temp(recordcount,tablename) select count(*),'+''''+@tablename+''''+' from '+@tablename
+        set @sql='insert into #temp(recordcount,tablename) select count(*),'+''''+@tablename+''''+' from '+@tableschema+'.'+@tablename
         exec(@sql)
-        fetch next from tablecursor into @tablename
+        fetch next from tablecursor into @tableschema, @tablename
         end
         
         close tablecursor
